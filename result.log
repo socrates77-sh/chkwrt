@@ -1,0 +1,51 @@
+2016-09-28 21:19:41
+=======================================================================================
+	MC30P6060
+=======================================================================================
+[00](class)                    (text)TComboBox  (Value)10 10
+[01](class)                    (text)Edit
+[02](class)                    (text)TComboBox  (Value)-1 -1
+[03](class)                    (text)Edit
+[04](class)                    (text)TComboBox  (Value)0 0
+[05](class)                    (text)Edit
+[06](class)上拉电阻选择位             (text)TGroupBox
+[07](class)20K                 (text)TRadioButton  (Value)1
+[08](class)80K                 (text)TRadioButton  (Value)0
+[09](class)端口施密特阈值选择           (text)TGroupBox
+[10](class)0.7VDD/0.3VDD       (text)TRadioButton  (Value)1
+[11](class)1.77V/1.1V          (text)TRadioButton  (Value)0
+[12](class)芯片兼容选择              (text)TGroupBox
+[13](class)菲林                  (text)TRadioButton  (Value)0
+[14](class)义隆                  (text)TRadioButton  (Value)1
+[15](class)端口施密特               (text)TGroupBox
+[16](class)SMT 禁止              (text)TRadioButton  (Value)0
+[17](class)SMT 使能              (text)TRadioButton  (Value)1
+[18](class)RDPORT              (text)TGroupBox
+[19](class)IO作输出口时,从端口读        (text)TRadioButton  (Value)1
+[20](class)IO作输出口时,从寄存器读       (text)TRadioButton  (Value)0
+[21](class)代码保护                (text)TGroupBox
+[22](class)屏蔽代码保护功能            (text)TRadioButton  (Value)1
+[23](class)使能代码保护功能            (text)TRadioButton  (Value)0
+[24](class)指令周期选择              (text)TGroupBox
+[25](class)4T为一周期              (text)TRadioButton  (Value)0
+[26](class)2T为一周期              (text)TRadioButton  (Value)1
+[27](class)                    (text)TComboBox  (Value)-1 -1
+[28](class)                    (text)Edit
+[29](class)外部复位                (text)TGroupBox
+[30](class)外部复位功能使能            (text)TRadioButton  (Value)0
+[31](class)外部复位功能禁止            (text)TRadioButton  (Value)1
+[32](class)IO输出驱动选择            (text)TGroupBox
+[33](class)弱驱动                 (text)TRadioButton  (Value)0
+[34](class)正常驱动                (text)TRadioButton  (Value)1
+[35](class)取消                  (text)TButton
+[36](class)确定                  (text)TButton
+[37](class)                    (text)TComboBox  (Value)9 9
+[38](class)                    (text)Edit
+[39](class)ODSEL               (text)TGroupBox
+[40](class)P13为输入口             (text)TRadioButton  (Value)1
+[41](class)P13为输入/开漏输出口        (text)TRadioButton  (Value)0
+[42](class)WDT 设置              (text)TGroupBox
+[43](class)WDT 开启              (text)TRadioButton  (Value)0
+[44](class)                    (text)TComboBox  (Value)0 0
+[45](class)                    (text)Edit
+[46](class)WDT 关闭              (text)TRadioButton  (Value)1
