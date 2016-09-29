@@ -18,3 +18,4 @@ hwnd_main = win32gui.FindWindow(None, 'EZPro100')
 hwnd_group_tool = win32gui.FindWindowEx(hwnd_main, 0, None, TOOL_GROUP_TEXT)
 hwnd_cmd_config = win32gui.FindWindowEx(hwnd_group_tool, 0, None, CONFIG_BUTTON_TEXT)
 win32api.PostMessage(hwnd_cmd_config, win32con.BM_CLICK, 0, 0)
+
