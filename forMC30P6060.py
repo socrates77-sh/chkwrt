@@ -1,8 +1,3 @@
-#!/bin/env python
-# -*- coding: utf-8 -*-
-
-__author__ = 'zwr'
-
 from mylib import *
 import win32api
 import win32gui
@@ -25,8 +20,10 @@ def get_win_option_handle():
 
     # 逐级查找配置芯片Button的handle
     hwnd_main = win32gui.FindWindow(None, 'EZPro100')
-    hwnd_group_tool = win32gui.FindWindowEx(hwnd_main, 0, None, TOOL_GROUP_TEXT)
-    hwnd_cmd_config = win32gui.FindWindowEx(hwnd_group_tool, 0, None, CONFIG_BUTTON_TEXT)
+    hwnd_group_tool = win32gui.FindWindowEx(
+        hwnd_main, 0, None, TOOL_GROUP_TEXT)
+    hwnd_cmd_config = win32gui.FindWindowEx(
+        hwnd_group_tool, 0, None, CONFIG_BUTTON_TEXT)
 
     # 点击配置芯片Button，打开Option窗口
     if hwnd_cmd_config != 0:
@@ -66,7 +63,8 @@ def do_control(hwnd, lparam):
     global index_of_control
     control_text = win32gui.GetWindowText(hwnd)
     class_name = win32gui.GetClassName(hwnd)
-    print('[%02d](class)%-20s(text)%s' % (index_of_control, control_text, class_name), end='', file=f_log)
+    print('[%02d](class)%-20s(text)%s' %
+          (index_of_control, control_text, class_name), end='', file=f_log)
 
     if class_name == 'TRadioButton':
         do_TRadioButton_value(hwnd)
