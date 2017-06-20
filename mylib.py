@@ -33,12 +33,12 @@ def get_process_count(process_name):
     p = os.popen('tasklist /FI "IMAGENAME eq %s"' % process_name)
     return p.read().count(process_name)
 
-def get_win_option_handle(win_title):
+
+def get_win_option_handle(option_title):
     """
     获取配置Option窗口的句柄
     :return: 返回句柄；不成功则返回0
     """
-
     # 逐级查找配置芯片Button的handle
     hwnd_main = win32gui.FindWindow(None, 'EZPro100')
     hwnd_group_tool = win32gui.FindWindowEx(
@@ -50,6 +50,4 @@ def get_win_option_handle(win_title):
     if hwnd_cmd_config != 0:
         win32api.PostMessage(hwnd_cmd_config, win32con.BM_CLICK, 0, 0)
         time.sleep(1)  # 需等待窗口打开，方能进行FindWindow，0.3s比较可靠
-        return win32gui.FindWindow(None, win_title)
-    else:
-        return 0
+        return win32gui.FindWindow(None, option_title)

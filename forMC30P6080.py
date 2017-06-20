@@ -3,7 +3,7 @@ import win32api
 import win32gui
 import win32con
 import time
-import struct
+# import struct
 
 Product_Type_Name = 'MC30P6080'  # 品名
 Option_Win_Title = '配置 MC30P6080'  # 配置Option的窗口标题
@@ -37,16 +37,18 @@ def do_TComboBox_value(hwnd):
 
 def gather_all_TComBox(hwnd):
     '''
-    将抓取到的TComBox的hwnd存到list中
+    将抓取到可见的TComBox的hwnd存到list中
     '''
-    all_hwnd_TComboBox.append(hwnd)
+    if(win32gui.IsWindowVisible(hwnd)):
+        all_hwnd_TComboBox.append(hwnd)
 
 
 def gather_all_TRadioButton(hwnd):
     '''
-    将抓取到的TRadioButton的hwnd存到list中
+    将抓取到可见的TRadioButton的hwnd存到list中
     '''
-    all_hwnd_TRadioButton.append(hwnd)
+    if(win32gui.IsWindowVisible(hwnd)):
+        all_hwnd_TRadioButton.append(hwnd)
 
 
 def do_control(hwnd, lparam):
@@ -69,7 +71,8 @@ def do_control(hwnd, lparam):
     elif class_name == 'TComboBox':
         gather_all_TComBox(hwnd)
     else:
-        log_print('')
+        # log_print('')
+        pass
 
     index_of_control += 1
 
@@ -96,5 +99,6 @@ def check_all():
     log_print('\t%s' % Product_Type_Name)
     log_print("=" * 80)
     extract_win_option()
+
     print(all_hwnd_TComboBox)
     print(all_hwnd_TRadioButton)
