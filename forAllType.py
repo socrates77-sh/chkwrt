@@ -161,6 +161,7 @@ def open_wrt_file(hwnd_main, file_name):
         click_menu(hwnd_main, 0, 0)  # 点击“Open”菜单
         time.sleep(WAIT_SECOND)
         h_dlg_open = win32gui.FindWindow(None, "打开")
+        # 以ID方式取得filename控件（Edit）的句柄
         h_txt_filename = win32gui.GetDlgItem(h_dlg_open, 0x47c)
         # 填写filename的值
         win32gui.SendMessage(h_txt_filename, win32con.WM_SETTEXT, 0, file_name)
@@ -187,12 +188,11 @@ def save_wrt_file(hwnd_main, file_name):
         click_menu(hwnd_main, 0, 1)  # 点击“Save as”菜单
         time.sleep(WAIT_SECOND)
         h_dlg_save = win32gui.FindWindow(None, "另存为")
-        # Dim hBtnSave As Integer = FindWindowEx(hDlgSave, 0, vbNullString,
-        # "保存(&S)")
+        # 以ID方式取得filename控件（Edit）的句柄
         h_txt_filename = win32gui.GetDlgItem(
-            h_dlg_save, 0x47c)  # 以ID方式取得filename控件（Edit）的句柄
-        win32gui.SendMessage(
-            h_txt_filename, win32con.WM_SETTEXT, 0, file_name)  # 填写filename的值
+            h_dlg_save, 0x47c)
+        # 填写filename的值
+        win32gui.SendMessage(h_txt_filename, win32con.WM_SETTEXT, 0, file_name)
         click_button(h_dlg_save, "保存(&S)")  # 点击Save按钮
         log_print("Save ... %s" % file_name + '.wrt')
         return True
