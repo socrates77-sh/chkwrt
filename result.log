@@ -1,6 +1,43 @@
-chkwrt (v0.1) 2017-06-21 19:47:00
+chkwrt (v0.1) 2017-06-23 19:16:24
 ================================================================================
 	MC30P6080
 ================================================================================
-Open ... G:\temp\rep\a.wrt
-Save ... G:\temp\rep\b.wrt
+select Radio[0] 写T1LOAD立即重载
+select Radio[1] 写T1LOAD溢出后重载
+select Radio[2] 下拉
+select Radio[3] 上拉且键盘中断有效
+select Radio[4] 开启
+select Radio[5] 禁止
+select Radio[6] 快
+select Radio[7] 慢
+select Radio[8] 休眠模式下关闭LVR
+select Radio[9] 休眠模式下不关闭LVR
+select Radio[10] 0.5K字节MTP模式,第二次烧录
+select Radio[11] 0.5K字节MTP模式,第一次烧录
+select Radio[12] 1K字节OTP模式
+select Radio[13] 20K
+select Radio[14] 80K
+select Radio[15] 有滤波
+select Radio[16] 无滤波
+select Radio[17] 0.7VDD/0.3VDD
+select Radio[18] 1.77V/1.1V
+select Radio[19] 菲林
+select Radio[20] 义隆
+select Radio[21] SMT 禁止
+select Radio[22] SMT 使能
+select Radio[23] 从端口读
+select Radio[24] 从寄存器读
+select Radio[25] 屏蔽代码保护功能
+select Radio[26] 使能代码保护功能
+select Radio[27] 4T为一周期
+select Radio[28] 2T为一周期
+select Radio[29] 外部复位功能使能
+select Radio[30] 外部复位功能禁止
+select Radio[31] OTP低功耗模式打开
+select Radio[32] OTP低功耗模式关闭
+select Radio[33] 系统时钟输出到P14
+select Radio[34] 系统时钟不输出
+select Radio[35] P13为输入口
+select Radio[36] P13为输入/开漏输出口
+select Radio[37] WDT 开启
+select Radio[38] WDT 关闭

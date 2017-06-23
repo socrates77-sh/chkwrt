@@ -11,6 +11,7 @@ EZPRO_TITLE = 'EZPro100'  # EZPro100程序主窗口标题
 TOOL_GROUP_TEXT = '快捷工具栏'  # 快捷工具Group标题
 CONFIG_BUTTON_TEXT = '配置芯片'  # 配置芯片Button标题
 OPTION_CANCEL_BUTTON_TEXT = '取消'  # 配置窗口<取消>Button标题
+OPTION_OK_BUTTON_TEXT = '确定'  # 配置窗口<确定>Button标题
 WAIT_SECOND = 1  # 按键后等待的时间
 
 

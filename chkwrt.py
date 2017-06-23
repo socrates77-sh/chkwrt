@@ -2,8 +2,9 @@
 
 
 from mylib import *
-from forAllType import *
+# from forAllType import *
 # import forMC30P6080
+import forAllType
 import datetime
 
 VERSION = 'v0.1'
@@ -25,6 +26,8 @@ log_print('chkwrt (%s) %s' %
           (VERSION, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')))
 
 # forMC30P6080.check_all()
-
+forAllType.Product_Type_Name = 'MC30P6080'
+forAllType.Option_Win_Title = '配置 MC30P6080'
+forAllType.check_all()
 
 f_log.close()

@@ -12,22 +12,24 @@ Option_Win_Title = ''  # 配置Option的窗口标题
 # 全局变量，遍历option窗口空间的序号
 # index_of_control = 0
 
-# hwnd_main = 0  # 主窗口句柄
-# hwnd_option_win = 0  # option窗口句柄
+hwnd_main = 0  # 主窗口句柄
+# hwnd_group_tool = 0  # 包含<配置芯片>按键的group句柄
+hwnd_option_win = 0  # option窗口句柄
 all_hwnd_TComboBox = []  # 所有option窗口中TComboBox（可见的）列表
 all_hwnd_TRadioButton = []  # 所有option窗口中TRadioButton（可见的）列表
+# serial_id = 0  # 一种选项的序号
 
 
-def get_win_option_handle(hwnd, option_title):
+def get_win_option_handle(option_title):
     """
     获取配置Option窗口的句柄
     :return: 返回句柄；不成功则返回0
     """
     # 逐级查找配置芯片Button的handle
-    # global hwnd_main
-    # hwnd_main = win32gui.FindWindow(None, 'EZPro100')
+    global hwnd_main
+    global hwnd_group_tool
     hwnd_group_tool = win32gui.FindWindowEx(
-        hwnd, 0, None, TOOL_GROUP_TEXT)
+        hwnd_main, 0, None, TOOL_GROUP_TEXT)
 
     # 点击配置芯片Button，打开Option窗口
     if click_button(hwnd_group_tool, CONFIG_BUTTON_TEXT):
@@ -102,17 +104,41 @@ def do_control(hwnd, lparam):
     # index_of_control += 1
 
 
-def extract_win_option(hwnd):
+def extract_win_option():
     """
     提取Option窗口的信息
-    :param hwnd: option window handle
     :return:
     """
+
     # 遍历Option窗口的所有控件
     # global index_of_control
     # index_of_control = 0
     # hwnd_main = win32gui.FindWindow(None, 'EZPro100')
-    win32gui.EnumChildWindows(hwnd, do_control, 0)
+    global hwnd_option_win
+    global all_hwnd_TComboBox
+    global all_hwnd_TRadioButton
+    hwnd_option_win = get_win_option_handle(Option_Win_Title)
+    if not hwnd_option_win:
+        print('Not find option window')
+        exit(3)
+    all_hwnd_TComboBox = []
+    all_hwnd_TRadioButton = []
+    win32gui.EnumChildWindows(hwnd_option_win, do_control, 0)
+
+
+def click_radio(hwnd):
+    """
+    按下一个Radio的操作
+    :param hwnd: Radio的handle
+    :return: None
+    """
+    win32api.SendMessage(hwnd, win32con.BM_SETSTATE, win32con.BST_CHECKED, 0)
+    win32gui.SendMessage(hwnd, win32con.WM_SETFOCUS, 0, 0)
+    time.sleep(WAIT_SECOND / 3)
+    win32gui.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
+    time.sleep(WAIT_SECOND / 3)
+    win32gui.SendMessage(hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
+    time.sleep(WAIT_SECOND / 3)
 
 
 def click_button(hwnd_parent, button_text):
@@ -147,13 +173,14 @@ def click_menu(hwnd, n_sub_pos, n_item_pos):
     win32gui.PostMessage(hwnd, win32con.WM_COMMAND, h_menuitem)
 
 
-def open_wrt_file(hwnd_main, file_name):
+def open_wrt_file(file_name):
     """
     点击菜单方式打开Open对话框，并打开指定的WRT文件
     :param hwnd_main: 菜单所在窗口的句柄
     :param file_name: WRT文件名，含路径
     :return: 如文件不存在，则返回False；否则返回Ture
     """
+    global hwnd_main
     if not os.path.exists(file_name):
         print("Error: File %s not found!" % file_name)
         return False
@@ -161,22 +188,21 @@ def open_wrt_file(hwnd_main, file_name):
         click_menu(hwnd_main, 0, 0)  # 点击“Open”菜单
         time.sleep(WAIT_SECOND)
         h_dlg_open = win32gui.FindWindow(None, "打开")
-        # 以ID方式取得filename控件（Edit）的句柄
         h_txt_filename = win32gui.GetDlgItem(h_dlg_open, 0x47c)
         # 填写filename的值
         win32gui.SendMessage(h_txt_filename, win32con.WM_SETTEXT, 0, file_name)
         click_button(h_dlg_open, "打开(&O)")  # 点击Open按钮
-        log_print("Open ... %s" % file_name)
+        log_print("open ... %s" % file_name)
         return True
 
 
-def save_wrt_file(hwnd_main, file_name):
+def save_wrt_file(file_name):
     """
     点击菜单方式打开Save对话框，并保存为指定的WRT文件
-    :param hwnd_main: 菜单所在窗口的句柄
     :param file_name: WRT文件名，含路径(不需后缀)
     :return: 如路径不存在，则返回False；否则返回Ture
     """
+    global hwnd_main
     path_name = os.path.dirname(file_name)
     if not os.path.exists(path_name):
         print("Error: Path %s not found!" % path_name)
@@ -188,17 +214,29 @@ def save_wrt_file(hwnd_main, file_name):
         click_menu(hwnd_main, 0, 1)  # 点击“Save as”菜单
         time.sleep(WAIT_SECOND)
         h_dlg_save = win32gui.FindWindow(None, "另存为")
-        # 以ID方式取得filename控件（Edit）的句柄
         h_txt_filename = win32gui.GetDlgItem(
-            h_dlg_save, 0x47c)
-        # 填写filename的值
-        win32gui.SendMessage(h_txt_filename, win32con.WM_SETTEXT, 0, file_name)
+            h_dlg_save, 0x47c)  # 以ID方式取得filename控件（Edit）的句柄
+        win32gui.SendMessage(
+            h_txt_filename, win32con.WM_SETTEXT, 0, file_name)  # 填写filename的值
         click_button(h_dlg_save, "保存(&S)")  # 点击Save按钮
-        log_print("Save ... %s" % file_name + '.wrt')
+        log_print("save ... %s" % file_name + '.wrt')
         return True
 
 
+def select_radio_and_save(radio_id, serial_id):
+    global all_hwnd_TRadioButton
+    extract_win_option()
+    hwnd_radio = all_hwnd_TRadioButton[radio_id]
+    click_radio(hwnd_radio)
+    radio_text = win32gui.GetWindowText(hwnd_radio)
+    log_print("select: Radio[%d] %s" % (radio_id, radio_text))
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+
+
 def check_all():
+    global hwnd_main
+    global hwnd_option_win
+
     log_print("=" * 80)
     log_print('\t%s' % Product_Type_Name)
     log_print("=" * 80)
@@ -208,19 +246,41 @@ def check_all():
         print('Not find main window')
         exit(2)
 
-    hwnd_option_win = get_win_option_handle(hwnd_main, Option_Win_Title)
-    if not hwnd_option_win:
-        print('Not find option window')
-        exit(3)
-
-    extract_win_option(hwnd_option_win)
+    # 获取radio和combo的数量，由于每次打开相关的hwnd会改变，所以实际不用list的内容
+    extract_win_option()
+    n_radio = len(all_hwnd_TRadioButton)
+    n_combo = len(all_hwnd_TComboBox)
     click_button(hwnd_option_win, OPTION_CANCEL_BUTTON_TEXT)
+
+    for i in range(0, n_radio):
+        select_radio_and_save(i, 0)
+
+    # print(n_radio,n_combo)
+    # select_radio_and_save(10, 0)
+    # hwnd_option_win = get_win_option_handle(Option_Win_Title)
+    # if not hwnd_option_win:
+    #     print('Not find option window')
+    #     exit(3)
+
+    # extract_win_option()
+    # # select_radio_and_save(all_hwnd_TRadioButton[1], 0)
+    # # click_radio(all_hwnd_TRadioButton[1])
+    # # log_print(win32gui.GetWindowText(all_hwnd_TRadioButton[1]))
+    # click_button(hwnd_option_win, OPTION_CANCEL_BUTTON_TEXT)
+    # print(all_hwnd_TRadioButton)
+
+    # extract_win_option()
+    # click_button(hwnd_option_win, OPTION_CANCEL_BUTTON_TEXT)
+    # print(all_hwnd_TRadioButton)
+
+    #select_radio_and_save(all_hwnd_TRadioButton[1], 0)
 
     # extract_win_option(hwnd_option_win)
 
     # click_menu(hwnd_main, 0, 0)
-    open_wrt_file(hwnd_main, r"G:\temp\rep\a.wrt")
-    save_wrt_file(hwnd_main, r"G:\temp\rep\b")
+    # open_wrt_file(r"G:\temp\rep\a.wrt")
+    # save_wrt_file(r"G:\temp\rep\b")
+    # print(len(all_hwnd_TRadioButton), all_hwnd_TRadioButton)
 
     # # print(click_button(hwnd_option_win, OPTION_CANCEL_BUTTON_TEXT))
     # print(all_hwnd_TComboBox)
