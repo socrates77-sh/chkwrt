@@ -192,14 +192,14 @@ def open_wrt_file(file_name):
         # 填写filename的值
         win32gui.SendMessage(h_txt_filename, win32con.WM_SETTEXT, 0, file_name)
         click_button(h_dlg_open, "打开(&O)")  # 点击Open按钮
-        log_print("open ... %s" % file_name)
+        log_print("\tload ... %s" % file_name)
         return True
 
 
 def save_wrt_file(file_name):
     """
     点击菜单方式打开Save对话框，并保存为指定的WRT文件
-    :param file_name: WRT文件名，含路径(不需后缀)
+    :param file_name: WRT文件名，含路径
     :return: 如路径不存在，则返回False；否则返回Ture
     """
     global hwnd_main
@@ -209,28 +209,95 @@ def save_wrt_file(file_name):
         return False
     else:
         # 文件存在则先删除，保证更新
-        if os.path.exists(file_name + '.wrt'):
-            os.remove(file_name + '.wrt')
+        if os.path.exists(file_name):
+            os.remove(file_name)
         click_menu(hwnd_main, 0, 1)  # 点击“Save as”菜单
         time.sleep(WAIT_SECOND)
         h_dlg_save = win32gui.FindWindow(None, "另存为")
         h_txt_filename = win32gui.GetDlgItem(
             h_dlg_save, 0x47c)  # 以ID方式取得filename控件（Edit）的句柄
+        file_name_wo_ext = file_name.split('.')[0]
+        # 填写filename的值
         win32gui.SendMessage(
-            h_txt_filename, win32con.WM_SETTEXT, 0, file_name)  # 填写filename的值
+            h_txt_filename, win32con.WM_SETTEXT, 0, file_name_wo_ext)
         click_button(h_dlg_save, "保存(&S)")  # 点击Save按钮
-        log_print("save ... %s" % file_name + '.wrt')
+        log_print("\tsave ... %s" % file_name)
         return True
 
 
-def select_radio_and_save(radio_id, serial_id):
+def compare_file(fn_a, fn_b):
+    """
+    以bin的方式比较两个文件是否一致
+    :param fn_a, fn_b: 两个文件名，含路径
+    :return: 文件相同，则返回True；否则返回False
+    """
+    try:
+        f_a = open(fn_a, 'rb')
+        data_a = f_a.read()
+        size_a = f_a.tell()
+        f_a.close()
+        f_b = open(fn_b, 'rb')
+        data_b = f_b.read()
+        size_b = f_b.tell()
+        f_b.close()
+    except Exception as e:
+        print(e)
+
+    if size_a != size_b:
+        return False
+
+    da_a = bytearray(data_a)
+    da_b = bytearray(data_b)
+    for i in range(0, size_a):
+        if da_a[i] != da_b[i]:
+            return False
+
+    return True
+
+
+def do_radio_item(radio_id, serial_id):
+    '''
+    完成一个radio选项的所有保存、载入、比较
+    :return: 比较正确，则返回True；否则返回False
+    '''
     global all_hwnd_TRadioButton
+
+    log_print("ITEM No. %d" % serial_id)
+
+    # open option window, select one radio, click ok, save wrt
     extract_win_option()
+    log_print("\topen option window")
     hwnd_radio = all_hwnd_TRadioButton[radio_id]
     click_radio(hwnd_radio)
     radio_text = win32gui.GetWindowText(hwnd_radio)
-    log_print("select: Radio[%d] %s" % (radio_id, radio_text))
+    log_print("\tselect: Radio[%d] %s" % (radio_id, radio_text))
     click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    rep_path = os.path.join(os.path.curdir, "rep")
+    fn_a = os.path.join(rep_path, "%s_%03d_A.wrt" %
+                        (Product_Type_Name, serial_id))
+    fn_a_abs = os.path.abspath(fn_a)
+    save_wrt_file(fn_a_abs)
+
+    # load wrt_a, open option window, click ok, save wrt_b
+    open_wrt_file(fn_a_abs)
+    extract_win_option()
+    log_print("\topen option window")
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    fn_b = os.path.join(rep_path, "%s_%03d_B.wrt" %
+                        (Product_Type_Name, serial_id))
+    fn_b_abs = os.path.abspath(fn_b)
+    save_wrt_file(fn_b_abs)
+    cmp_result = compare_file(fn_a_abs, fn_b_abs)
+    log_print("\tcompare: %s <-> %s" %
+              (os.path.basename(fn_a_abs), os.path.basename(fn_b_abs)))
+    if cmp_result:
+        log_print("[Pass]")
+        return True
+    else:
+        log_print("[Fail]")
+        return False
 
 
 def check_all():
@@ -238,7 +305,7 @@ def check_all():
     global hwnd_option_win
 
     log_print("=" * 80)
-    log_print('\t%s' % Product_Type_Name)
+    log_print(Product_Type_Name)
     log_print("=" * 80)
 
     hwnd_main = win32gui.FindWindow(None, EZPRO_TITLE)
@@ -252,36 +319,21 @@ def check_all():
     n_combo = len(all_hwnd_TComboBox)
     click_button(hwnd_option_win, OPTION_CANCEL_BUTTON_TEXT)
 
-    for i in range(0, n_radio):
-        select_radio_and_save(i, 0)
+    if not os.path.exists(os.path.join(os.path.curdir, "rep")):
+        os.makedirs(os.path.join(os.path.curdir, "rep"))
 
-    # print(n_radio,n_combo)
-    # select_radio_and_save(10, 0)
-    # hwnd_option_win = get_win_option_handle(Option_Win_Title)
-    # if not hwnd_option_win:
-    #     print('Not find option window')
-    #     exit(3)
+    count_pass = 0
+    count_fail = 0
+    serial_number = 1
+    # for i in range(0, n_radio):
+    for i in range(0, 2):
+        if do_radio_item(i, serial_number):
+            count_pass += 1
+        else:
+            count_fail += 1
+        serial_number = serial_number + 1
 
-    # extract_win_option()
-    # # select_radio_and_save(all_hwnd_TRadioButton[1], 0)
-    # # click_radio(all_hwnd_TRadioButton[1])
-    # # log_print(win32gui.GetWindowText(all_hwnd_TRadioButton[1]))
-    # click_button(hwnd_option_win, OPTION_CANCEL_BUTTON_TEXT)
-    # print(all_hwnd_TRadioButton)
-
-    # extract_win_option()
-    # click_button(hwnd_option_win, OPTION_CANCEL_BUTTON_TEXT)
-    # print(all_hwnd_TRadioButton)
-
-    #select_radio_and_save(all_hwnd_TRadioButton[1], 0)
-
-    # extract_win_option(hwnd_option_win)
-
-    # click_menu(hwnd_main, 0, 0)
-    # open_wrt_file(r"G:\temp\rep\a.wrt")
-    # save_wrt_file(r"G:\temp\rep\b")
-    # print(len(all_hwnd_TRadioButton), all_hwnd_TRadioButton)
-
-    # # print(click_button(hwnd_option_win, OPTION_CANCEL_BUTTON_TEXT))
-    # print(all_hwnd_TComboBox)
-    # print(all_hwnd_TRadioButton)
+    log_print("=" * 80)
+    log_print("Summary")
+    log_print("\tPass: %d\n\tFail: %d" % (count_pass, count_fail))
+    log_print("=" * 80)
