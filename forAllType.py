@@ -63,7 +63,8 @@ def gather_all_TComBox(hwnd):
     将抓取到可见的TComBox的hwnd存到list中
     '''
     if win32gui.IsWindowVisible(hwnd):
-        all_hwnd_TComboBox.append(hwnd)
+        count = win32gui.SendMessage(hwnd, win32con.CB_GETCOUNT, 0, 0)
+        all_hwnd_TComboBox.append((hwnd, count))
 
 
 def gather_all_TRadioButton(hwnd):
@@ -126,6 +127,23 @@ def extract_win_option():
     win32gui.EnumChildWindows(hwnd_option_win, do_control, 0)
 
 
+def click_combo_choice(hwnd, choice_id):
+    """
+    按下一个Combo选项的操作
+    :param hwnd: Combo的handle
+    :param choice_id: 选项的序号（0起始）
+    :return: None
+    """
+    # win32gui.SendMessage(hwnd, win32con.WM_SETFOCUS, 0, 0)
+    win32gui.SendMessage(hwnd, win32con.CB_SHOWDROPDOWN, True, 0)
+    win32gui.SendMessage(hwnd, win32con.CB_SETCURSEL, choice_id, 0)
+    win32gui.SendMessage(hwnd, win32con.WM_SETFOCUS, 0, 0)
+    time.sleep(WAIT_SECOND / 3)
+    win32gui.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
+    time.sleep(WAIT_SECOND / 3)
+    win32gui.SendMessage(hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
+
+
 def click_radio(hwnd):
     """
     按下一个Radio的操作
@@ -134,7 +152,7 @@ def click_radio(hwnd):
     """
     win32api.SendMessage(hwnd, win32con.BM_SETSTATE, win32con.BST_CHECKED, 0)
     win32gui.SendMessage(hwnd, win32con.WM_SETFOCUS, 0, 0)
-    time.sleep(WAIT_SECOND / 3)
+    # time.sleep(WAIT_SECOND / 3)
     win32gui.SendMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_RETURN, 0)
     time.sleep(WAIT_SECOND / 3)
     win32gui.SendMessage(hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, 0)
@@ -251,11 +269,10 @@ def compare_file(fn_a, fn_b):
     for i in range(0, size_a):
         if da_a[i] != da_b[i]:
             return False
-
     return True
 
 
-def do_radio_item(radio_id, serial_id):
+def check_radio_item(radio_id, serial_id):
     '''
     完成一个radio选项的所有保存、载入、比较
     :return: 比较正确，则返回True；否则返回False
@@ -300,6 +317,56 @@ def do_radio_item(radio_id, serial_id):
         return False
 
 
+def check_combo_item(combo_id, choice_id, serial_id):
+    '''
+    完成一个combo选项的所有保存、载入、比较
+    :return: 比较正确，则返回True；否则返回False
+    '''
+    global all_hwnd_TComboBox
+
+    log_print("ITEM No. %d" % serial_id)
+
+    # open option window, select one combo choice, click ok, save wrt
+    extract_win_option()
+    log_print("\topen option window")
+    hwnd_combo = all_hwnd_TComboBox[combo_id][0]
+    click_combo_choice(hwnd_combo, choice_id)
+    buf_len = win32gui.SendMessage(hwnd_combo, win32con.WM_GETTEXTLENGTH)
+    buf_len *= 2  # 汉字需*2
+    buf = win32gui.PyMakeBuffer(buf_len)
+    win32gui.SendMessage(hwnd_combo, win32con.WM_GETTEXT, buf_len, buf)
+    choice_text = buf.tobytes().decode('utf_16_le', 'ignore')
+    log_print("\tselect: Combo[%d] - choice[%d] %s" %
+              (combo_id, choice_id, choice_text.strip()))
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    rep_path = os.path.join(os.path.curdir, "rep")
+    fn_a = os.path.join(rep_path, "%s_%03d_A.wrt" %
+                        (Product_Type_Name, serial_id))
+    fn_a_abs = os.path.abspath(fn_a)
+    save_wrt_file(fn_a_abs)
+
+    # load wrt_a, open option window, click ok, save wrt_b
+    open_wrt_file(fn_a_abs)
+    extract_win_option()
+    log_print("\topen option window")
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    fn_b = os.path.join(rep_path, "%s_%03d_B.wrt" %
+                        (Product_Type_Name, serial_id))
+    fn_b_abs = os.path.abspath(fn_b)
+    save_wrt_file(fn_b_abs)
+    cmp_result = compare_file(fn_a_abs, fn_b_abs)
+    log_print("\tcompare: %s <-> %s" %
+              (os.path.basename(fn_a_abs), os.path.basename(fn_b_abs)))
+    if cmp_result:
+        log_print("[Pass]")
+        return True
+    else:
+        log_print("[Fail]")
+        return False
+
+
 def check_all():
     global hwnd_main
     global hwnd_option_win
@@ -313,10 +380,10 @@ def check_all():
         print('Not find main window')
         exit(2)
 
-    # 获取radio和combo的数量，由于每次打开相关的hwnd会改变，所以实际不用list的内容
+    # 获取radio和combo，由于每次打开相关的hwnd会改变，所以实际不用list的内容
     extract_win_option()
-    n_radio = len(all_hwnd_TRadioButton)
-    n_combo = len(all_hwnd_TComboBox)
+    tmp_radio = all_hwnd_TRadioButton
+    tmp_all_combo = all_hwnd_TComboBox
     click_button(hwnd_option_win, OPTION_CANCEL_BUTTON_TEXT)
 
     if not os.path.exists(os.path.join(os.path.curdir, "rep")):
@@ -325,14 +392,26 @@ def check_all():
     count_pass = 0
     count_fail = 0
     serial_number = 1
-    # for i in range(0, n_radio):
-    for i in range(0, 2):
-        if do_radio_item(i, serial_number):
+
+    # 处理所有的radio
+    n_radio = len(tmp_radio)
+    for i in range(0, n_radio):
+        if check_radio_item(i, serial_number):
             count_pass += 1
         else:
             count_fail += 1
         serial_number = serial_number + 1
 
+    # 处理所有的combo
+    for i in range(0, len(tmp_all_combo)):
+        for j in range(0, tmp_all_combo[i][1]):
+            if check_combo_item(i, j, serial_number):
+                count_pass += 1
+            else:
+                count_fail += 1
+            serial_number = serial_number + 1
+
+    # 输出summary
     log_print("=" * 80)
     log_print("Summary")
     log_print("\tPass: %d\n\tFail: %d" % (count_pass, count_fail))
