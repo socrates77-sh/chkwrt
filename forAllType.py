@@ -306,10 +306,60 @@ def check_radio_item(radio_id, serial_id):
                         (Product_Type_Name, serial_id))
     fn_b_abs = os.path.abspath(fn_b)
     save_wrt_file(fn_b_abs)
-    cmp_result = compare_file(fn_a_abs, fn_b_abs)
+
+    # open option window, select prev, click ok
+    # load wrt_a, open option window, click ok, save wrt_c
+    extract_win_option()
+    log_print("\topen option window")
+    id = len(all_hwnd_TRadioButton) - 1 if radio_id == 0 else radio_id - 1
+    hwnd_radio = all_hwnd_TRadioButton[id]
+    click_radio(hwnd_radio)
+    radio_text = win32gui.GetWindowText(hwnd_radio)
+    log_print("\tselect: Radio[%d] %s" % (id, radio_text))
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    open_wrt_file(fn_a_abs)
+    extract_win_option()
+    log_print("\topen option window")
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    fn_c = os.path.join(rep_path, "%s_%03d_C.wrt" %
+                        (Product_Type_Name, serial_id))
+    fn_c_abs = os.path.abspath(fn_c)
+    save_wrt_file(fn_c_abs)
+
+    # open option window, select next, click ok
+    # load wrt_a, open option window, click ok, save wrt_d
+    extract_win_option()
+    log_print("\topen option window")
+    id = 0 if radio_id == len(all_hwnd_TRadioButton) - 1 else radio_id + 1
+    hwnd_radio = all_hwnd_TRadioButton[id]
+    click_radio(hwnd_radio)
+    radio_text = win32gui.GetWindowText(hwnd_radio)
+    log_print("\tselect: Radio[%d] %s" % (id, radio_text))
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    open_wrt_file(fn_a_abs)
+    extract_win_option()
+    log_print("\topen option window")
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    fn_d = os.path.join(rep_path, "%s_%03d_D.wrt" %
+                        (Product_Type_Name, serial_id))
+    fn_d_abs = os.path.abspath(fn_d)
+    save_wrt_file(fn_d_abs)
+
+    # compare file
+    cmp_result1 = compare_file(fn_a_abs, fn_b_abs)
     log_print("\tcompare: %s <-> %s" %
               (os.path.basename(fn_a_abs), os.path.basename(fn_b_abs)))
-    if cmp_result:
+    cmp_result2 = compare_file(fn_a_abs, fn_c_abs)
+    log_print("\tcompare: %s <-> %s" %
+              (os.path.basename(fn_a_abs), os.path.basename(fn_c_abs)))
+    cmp_result3 = compare_file(fn_a_abs, fn_d_abs)
+    log_print("\tcompare: %s <-> %s" %
+              (os.path.basename(fn_a_abs), os.path.basename(fn_d_abs)))
+    if cmp_result1 and cmp_result2 and cmp_result3:
         log_print("[Pass]")
         return True
     else:
@@ -356,10 +406,72 @@ def check_combo_item(combo_id, choice_id, serial_id):
                         (Product_Type_Name, serial_id))
     fn_b_abs = os.path.abspath(fn_b)
     save_wrt_file(fn_b_abs)
-    cmp_result = compare_file(fn_a_abs, fn_b_abs)
+
+    # open option window, select prev, click ok
+    # load wrt_a, open option window, click ok, save wrt_c
+    extract_win_option()
+    log_print("\topen option window")
+    hwnd_combo = all_hwnd_TComboBox[combo_id][0]
+    id = all_hwnd_TComboBox[combo_id][1] - 1\
+        if choice_id == 0 else choice_id - 1
+    click_combo_choice(hwnd_combo, id)
+    buf_len = win32gui.SendMessage(hwnd_combo, win32con.WM_GETTEXTLENGTH)
+    buf_len *= 2  # 汉字需*2
+    buf = win32gui.PyMakeBuffer(buf_len)
+    win32gui.SendMessage(hwnd_combo, win32con.WM_GETTEXT, buf_len, buf)
+    choice_text = buf.tobytes().decode('utf_16_le', 'ignore')
+    log_print("\tselect: Combo[%d] - choice[%d] %s" %
+              (combo_id, id, choice_text.strip()))
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    open_wrt_file(fn_a_abs)
+    extract_win_option()
+    log_print("\topen option window")
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    fn_c = os.path.join(rep_path, "%s_%03d_C.wrt" %
+                        (Product_Type_Name, serial_id))
+    fn_c_abs = os.path.abspath(fn_c)
+    save_wrt_file(fn_c_abs)
+
+    # open option window, select next, click ok
+    # load wrt_a, open option window, click ok, save wrt_c
+    extract_win_option()
+    log_print("\topen option window")
+    hwnd_combo = all_hwnd_TComboBox[combo_id][0]
+    id = 0 if choice_id == all_hwnd_TComboBox[combo_id][1] - 1 \
+        else choice_id + 1
+    click_combo_choice(hwnd_combo, id)
+    buf_len = win32gui.SendMessage(hwnd_combo, win32con.WM_GETTEXTLENGTH)
+    buf_len *= 2  # 汉字需*2
+    buf = win32gui.PyMakeBuffer(buf_len)
+    win32gui.SendMessage(hwnd_combo, win32con.WM_GETTEXT, buf_len, buf)
+    choice_text = buf.tobytes().decode('utf_16_le', 'ignore')
+    log_print("\tselect: Combo[%d] - choice[%d] %s" %
+              (combo_id, id, choice_text.strip()))
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    open_wrt_file(fn_a_abs)
+    extract_win_option()
+    log_print("\topen option window")
+    click_button(hwnd_option_win, OPTION_OK_BUTTON_TEXT)
+    log_print("\tclick ok button")
+    fn_d = os.path.join(rep_path, "%s_%03d_D.wrt" %
+                        (Product_Type_Name, serial_id))
+    fn_d_abs = os.path.abspath(fn_d)
+    save_wrt_file(fn_d_abs)
+
+    # compare file
+    cmp_result1 = compare_file(fn_a_abs, fn_b_abs)
     log_print("\tcompare: %s <-> %s" %
               (os.path.basename(fn_a_abs), os.path.basename(fn_b_abs)))
-    if cmp_result:
+    cmp_result2 = compare_file(fn_a_abs, fn_c_abs)
+    log_print("\tcompare: %s <-> %s" %
+              (os.path.basename(fn_a_abs), os.path.basename(fn_c_abs)))
+    cmp_result3 = compare_file(fn_a_abs, fn_d_abs)
+    log_print("\tcompare: %s <-> %s" %
+              (os.path.basename(fn_a_abs), os.path.basename(fn_d_abs)))
+    if cmp_result1 and cmp_result2 and cmp_result3:
         log_print("[Pass]")
         return True
     else:
