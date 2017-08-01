@@ -60,18 +60,18 @@ def do_TComboBox_value(hwnd):
 
 def gather_all_TComBox(hwnd):
     '''
-    将抓取到可见的TComBox的hwnd存到list中
+    将抓取到可见、有效的TComBox的hwnd存到list中
     '''
-    if win32gui.IsWindowVisible(hwnd):
+    if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
         count = win32gui.SendMessage(hwnd, win32con.CB_GETCOUNT, 0, 0)
         all_hwnd_TComboBox.append((hwnd, count))
 
 
 def gather_all_TRadioButton(hwnd):
     '''
-    将抓取到可见的TRadioButton的hwnd存到list中
+    将抓取到可见的、有效的TRadioButton的hwnd存到list中
     '''
-    if win32gui.IsWindowVisible(hwnd):
+    if win32gui.IsWindowVisible(hwnd) and win32gui.IsWindowEnabled(hwnd):
         all_hwnd_TRadioButton.append(hwnd)
 
 

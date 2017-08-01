@@ -1,3 +1,4 @@
 chkwrt version history:
-v0.1 17/6/24	initial release for test
-v0.2 17/7/28    add "change option then load wrt" modes
+v0.1 17/06/24   initial release for test
+v0.2 17/07/28   add "change option then load wrt" modes
+v0.3 17/08/01   skip "disable" item

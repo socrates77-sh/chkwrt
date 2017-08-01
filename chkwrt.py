@@ -7,7 +7,7 @@ from mylib import *
 import forAllType
 import datetime
 
-VERSION = 'v0.2'
+VERSION = 'v0.3'
 
 print("使用说明：")
 print("(1) 已打开一个EZPRO100软件")
